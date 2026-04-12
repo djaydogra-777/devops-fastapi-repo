@@ -86,7 +86,7 @@ jobs:
 
       - name: Update image tag in deployment.yaml
         run: |
-          sed -i "s|\(image: .*/simple-fastapi-app:\).*|\1${{ steps.version.outputs.tag }}|" deploy-repo/deployment.yaml
+          sed -i "s|\(image: .*/simple-fastapi-app:\).*|\1${{ steps.version.outputs.tag }}|" deploy-repo/fastapi-deployment.yaml
 
       - name: Raise PR to deploy repository
         env:
@@ -97,7 +97,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           BRANCH="update-image-${{ steps.version.outputs.tag }}"
           git checkout -b $BRANCH
-          git add deployment.yaml
+          git add fastapi-deployment.yaml
           git commit -m "chore: update image tag to ${{ steps.version.outputs.tag }}"
           git push origin $BRANCH
           gh pr create \
