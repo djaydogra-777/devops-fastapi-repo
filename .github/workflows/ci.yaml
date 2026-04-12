@@ -29,7 +29,7 @@ jobs:
         run: pytest tests/
 
       - name: Build Docker image (validation only)
-        run: docker build -t simple-react-app:pr-${{ github.event.pull_request.number }} .
+        run: docker build -t simple-fastapi-app:pr-${{ github.event.pull_request.number }} .
 
   # ─── Job 2: Merge to main — test + build + push ────────────────────────────
   test-build-push:
@@ -64,17 +64,17 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-react-app:${{ steps.version.outputs.tag }} .
+          docker build -t ${{ secrets.DOCKER_USERNAME }}/simple-fastapi-app:${{ steps.version.outputs.tag }} .
 
       - name: Push Docker image with version tag
         run: |
-          docker push ${{ secrets.DOCKER_USERNAME }}/simple-react-app:${{ steps.version.outputs.tag }}
+          docker push ${{ secrets.DOCKER_USERNAME }}/simple-fastapi-app:${{ steps.version.outputs.tag }}
 
       - name: Print pushed image version
         run: |
           echo "==========================================="
           echo "Docker image successfully pushed:"
-          echo "  ${{ secrets.DOCKER_USERNAME }}/simple-react-app:${{ steps.version.outputs.tag }}"
+          echo "  ${{ secrets.DOCKER_USERNAME }}/simple-fastapi-app:${{ steps.version.outputs.tag }}"
           echo "==========================================="
 
       - name: Checkout deploy repository
@@ -86,7 +86,7 @@ jobs:
 
       - name: Update image tag in deployment.yaml
         run: |
-          sed -i "s|\(image: .*/simple-react-app:\).*|\1${{ steps.version.outputs.tag }}|" deploy-repo/deployment.yaml
+          sed -i "s|\(image: .*/simple-fastapi-app:\).*|\1${{ steps.version.outputs.tag }}|" deploy-repo/deployment.yaml
 
       - name: Raise PR to deploy repository
         env:
@@ -105,6 +105,6 @@ jobs:
             --base main \
             --head $BRANCH \
             --title "chore: update image tag to ${{ steps.version.outputs.tag }}" \
-            --body "Automated PR: update container image to \`${{ secrets.DOCKER_USERNAME }}/simple-react-app:${{ steps.version.outputs.tag }}\`"
+            --body "Automated PR: update container image to \`${{ secrets.DOCKER_USERNAME }}/simple-fastapi-app:${{ steps.version.outputs.tag }}\`"
 
  
