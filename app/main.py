@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 
-from app.routes import health, root
+from app.routes import health, root, simulate_error
 
 app = FastAPI(title="DevOps FastAPI", version="1.0.0")
 
 app.include_router(root.router)
 app.include_router(health.router)
+app.include_router(simulate_error.router)
 
 if __name__ == "__main__":
     import uvicorn
