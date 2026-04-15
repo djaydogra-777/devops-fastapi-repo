@@ -10,7 +10,7 @@ loki:
       admin: loki
     azure:
       accountName: djloki 
-      accountKey: "c/eSYcnP4QWO/woQ96LVT0BL5dnP9Zgivc/PJwok85CG/W3EQFThoYwDsuIQ98Cc5AWL4l8B/0WN+ASth7gqRA==" # Leave empty if relying entirely on managed identity, or >
+      accountKey: "" # Leave empty if relying entirely on managed identity, or >
       useManagedIdentity: false
   schemaConfig:
     configs:
