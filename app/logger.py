@@ -1,6 +1,19 @@
 import logging
 import os
 
+
+def get_logger(name: str = "fastapi-app") -> logging.Logger:
+    return logging.getLogger(name)
+
+
+def setup_logging() -> None:
+    _configure_logger()
+
+
+def _configure_logger() -> None:
+    pass  # configuration is applied at module level below
+
+
 logger = logging.getLogger("fastapi-app")
 logger.setLevel(logging.INFO)
 
