@@ -1,40 +1,36 @@
 import logging
-import sys
-import json
-from datetime import datetime
+import os
 
-SERVICE_NAME = "simple-fastapi-app"
-NAMESPACE = "simple-fastapi-app"
-ENV = "development"
+logger = logging.getLogger("fastapi-app")
+logger.setLevel(logging.INFO)
 
+formatter = logging.Formatter(
+    '%(asctime)s - %(levelname)s - %(message)s'
+)
 
-class JsonFormatter(logging.Formatter):
-    def format(self, record):
-        log_record = {
-            "timestamp": datetime.utcnow().isoformat(),
-            "level": record.levelname,
-            "message": record.getMessage(),
-            "service": SERVICE_NAME,
-            "namespace": NAMESPACE,
-            "env": ENV,
-            "logger": record.name,
-        }
+# Console handler (always)
+console_handler = logging.StreamHandler()
+console_handler.setFormatter(formatter)
+logger.addHandler(console_handler)
 
-        if record.exc_info:
-            log_record["exception"] = self.formatException(record.exc_info)
+ENV = os.getenv("ENV", "dev")
 
-        return json.dumps(log_record)
+# Only enable Loki in prod
+if ENV == "prod":
+    try:
+        from logging_loki import LokiHandler
 
+        loki_handler = LokiHandler(
+            url="http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push",
+            tags={
+                "service": "simple-fastapi-app",
+                "env": "prod"
+            },
+            version="1",
+        )
 
-def setup_logging():
-    handler = logging.StreamHandler(sys.stdout)
-    handler.setFormatter(JsonFormatter())
+        loki_handler.setFormatter(formatter)
+        logger.addHandler(loki_handler)
 
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-    root_logger.handlers = []  # remove default handlers
-    root_logger.addHandler(handler)
-
-
-def get_logger(name: str):
-    return logging.getLogger(name)
+    except Exception as e:
+        logger.error(f"Failed to initialize Loki handler: {e}")
