@@ -18,15 +18,15 @@ def setup_logging() -> None:
 
     ENV = os.getenv("ENV", "dev")
 
-    if ENV == "development":
+    if ENV == "prod":
         try:
             from logging_loki import LokiHandler
 
             loki_handler = LokiHandler(
-                url="http://loki-gateway.loki.svc.cluster.local",
+                url="http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push",
                 tags={
                     "service": "simple-fastapi-app",
-                    "env": "development",
+                    "env": "prod",
                 },
                 version="1",
             )
