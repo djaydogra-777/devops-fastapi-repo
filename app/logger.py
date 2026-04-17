@@ -23,7 +23,7 @@ def setup_logging() -> None:
             from logging_loki import LokiHandler
 
             loki_handler = LokiHandler(
-                url="http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push",
+                url="http://loki-gateway.loki.svc.cluster.local",
                 tags={
                     "service": "simple-fastapi-app",
                     "env": "prod",
