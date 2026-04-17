@@ -16,22 +16,19 @@ def setup_logging() -> None:
     console_handler.setFormatter(formatter)
     app_logger.addHandler(console_handler)
 
-    ENV = os.getenv("ENV", "dev")
+    try:
+        from logging_loki import LokiHandler
 
-    if ENV == "prod":
-        try:
-            from logging_loki import LokiHandler
+        loki_handler = LokiHandler(
+            url="http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push",
+            tags={
+                "service": "simple-fastapi-app",
+                "env": "prod",
+            },
+            version="1",
+        )
+        loki_handler.setFormatter(formatter)
+        app_logger.addHandler(loki_handler)
 
-            loki_handler = LokiHandler(
-                url="http://loki-gateway.loki.svc.cluster.local",
-                tags={
-                    "service": "simple-fastapi-app",
-                    "env": "prod",
-                },
-                version="1",
-            )
-            loki_handler.setFormatter(formatter)
-            app_logger.addHandler(loki_handler)
-
-        except Exception as e:
-            app_logger.error(f"Failed to initialize Loki handler: {e}")
+    except Exception as e:
+        app_logger.error(f"Failed to initialize Loki handler: {e}")
