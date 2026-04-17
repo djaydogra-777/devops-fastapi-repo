@@ -1,10 +1,7 @@
 from fastapi import FastAPI
 
-from app.logger import get_logger, setup_logging
+from app.logger import logger
 from app.routes import health, root, simulate_error
-
-setup_logging()
-logger = get_logger(__name__)
 
 app = FastAPI(title="DevOps FastAPI", version="1.0.0")
 
