@@ -25,6 +25,10 @@ def setup_logging() -> None:
                 "service": "simple-fastapi-app",
                 "env": "prod",
             },
+            auth=("", ""),
+            headers={
+                "X-Scope-OrgID": "tenant1",
+            },
             version="1",
         )
         loki_handler.setFormatter(formatter)
