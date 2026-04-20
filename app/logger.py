@@ -1,32 +1,30 @@
 import logging
 import os
+import json
 
 ENV = os.getenv("ENV", "dev")
 
-formatter = logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(message)s"
-)
+class JsonFormatter(logging.Formatter):
+    def format(self, record):
+        return json.dumps({
+            "timestamp": self.formatTime(record),
+            "level": record.levelname,
+            "message": record.getMessage(),
+            "service": "simple-fastapi-app"
+        })
 
-class ServiceLogger(logging.LoggerAdapter):
-    def process(self, msg, kwargs):
-        if "extra" not in kwargs:
-            kwargs["extra"] = {}
-        kwargs["extra"]["service"] = self.extra["service"]
-        return msg, kwargs
-
+formatter = JsonFormatter()
 
 def create_logger(service_name: str):
-    base_logger = logging.getLogger(service_name)
-    base_logger.setLevel(logging.INFO)
+    logger = logging.getLogger(service_name)
+    logger.setLevel(logging.INFO)
 
-    if base_logger.handlers:
-        return base_logger
+    if logger.handlers:
+        return logger
 
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
-    base_logger.addHandler(console_handler)
-
-    logger = ServiceLogger(base_logger, {"service": service_name})
+    logger.addHandler(console_handler)
 
     if ENV == "prod":
         try:
@@ -34,17 +32,15 @@ def create_logger(service_name: str):
 
             loki_handler = LokiHandler(
                 url="http://loki-gateway.loki.svc.cluster.local/loki/api/v1/push",
-                tags={
-                    "env": ENV
-                },
+                tags={"env": ENV},
                 version="1",
             )
 
             loki_handler.setFormatter(formatter)
-            base_logger.addHandler(loki_handler)
+            logger.addHandler(loki_handler)
 
         except Exception as e:
-            base_logger.error(f"Loki init failed: {e}")
+            logger.error(f"Loki init failed: {e}")
 
     return logger
 
