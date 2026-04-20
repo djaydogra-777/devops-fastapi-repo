@@ -33,3 +33,6 @@ def create_logger(service_name: str):
             base_logger.error(f"Loki init failed: {e}")
 
     return logger
+
+
+logger = create_logger("simple-fastapi-app")
