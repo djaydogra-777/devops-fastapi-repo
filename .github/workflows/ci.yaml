@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  # ─── Job 1: PR — test + build only  ───────────────────────────────
+  # ─── Job 1: PR — test + build only ───────────────────────────────
   test-and-build:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
@@ -17,21 +17,27 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6.0.0
         with:
           python-version: '3.11'
           cache: 'pip'
-
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
       - name: Run tests
-        run: pytest tests/
+        run: |
+          pip install pytest
+          pytest
+        env:
+          ENV: test
+          CI: true
 
       - name: Build Docker image (validation only)
         run: docker build -t simple-fastapi-app:pr-${{ github.event.pull_request.number }} .
 
-  # ─── Job 2: Merge to main — test + build + push ────────────────────────────
+  # ─── Job 2: Merge to main — test + build + push + update repo ────────────────────────────
   test-build-push:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
@@ -41,16 +47,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6.0.0
         with:
           python-version: '3.11'
           cache: 'pip'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-      - name: Run tests
-        run: pytest tests/
+      - run: |
+          pip install pytest
+          pytest
+        env:
+          CI: true
 
       - name: Set image version tag
         id: version
@@ -98,7 +109,7 @@ jobs:
           BRANCH="update-image-${{ steps.version.outputs.tag }}"
           git checkout -b $BRANCH
           git add fastapi-deployment.yaml
-          git commit -m "chore: update image tag to ${{ steps.version.outputs.tag }}"
+          git commit -m "chore: update image to ${{ steps.version.outputs.tag }}"
           git push origin $BRANCH
           gh pr create \
             --repo djaydogra-777/devops-deployment-config-repo \
@@ -106,5 +117,3 @@ jobs:
             --head $BRANCH \
             --title "chore: update image tag to ${{ steps.version.outputs.tag }}" \
             --body "Automated PR: update container image to \`${{ secrets.DOCKER_USERNAME }}/simple-fastapi-app:${{ steps.version.outputs.tag }}\`"
-
- 
