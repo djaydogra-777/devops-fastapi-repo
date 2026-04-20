@@ -1,3 +1,4 @@
+import logging
 from logging import LoggerAdapter
 
 def create_logger(service_name: str):
